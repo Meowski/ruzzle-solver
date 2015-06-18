@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 
 /**
  * Created by Meowington on 6/16/2015.
@@ -43,7 +44,7 @@ public class IOHelper {
         }
     }
 
-    public static void printSolution(int[] indices) {
+    public static void printSolution(ArrayList<Integer> indices) {
 
         // Modify the board with the solution.
         int prev;
@@ -52,9 +53,9 @@ public class IOHelper {
         int x;
         int y;
 
-        for (int i = 0; i < indices.length - 1 && indices[i + 1] != -1; i++) {
-            prev = indices[i];
-            next = indices[i + 1];
+        for (int i = 0; i < indices.size() - 1; i++) {
+            prev = indices.get(i);
+            next = indices.get(i + 1);
 
             x = indexToXCoord(prev);
             y =indexToYCoord(prev);

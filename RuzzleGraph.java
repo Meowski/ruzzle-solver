@@ -10,15 +10,11 @@ import java.util.LinkedList;
 class RuzzleGraph {
 
     private RNode[] rnodes;
-    private HashMap<String, int[]> solutionToIndices;
-    private ArrayList<int[]> indices;
+    private HashMap<String, ArrayList<Integer>> solutionToIndices;
+    private ArrayList<Integer> indices;
     private ArrayList<String> solutions;
 
-    private final int arrIndex[] = {
-            -1, -1, -1, -1,
-            -1, -1, -1, -1,
-            -1, -1, -1, -1,
-            -1, -1, -1, -1};
+    private ArrayList<Integer> arrIndex;
 
     public static class RNode {
 
@@ -186,37 +182,36 @@ class RuzzleGraph {
         rnodes[15].addChild(rnodes[11]);
         rnodes[15].addChild(rnodes[14]);
 
-        solutionToIndices = new HashMap<>();
-        solutions = new ArrayList<>();
+        this.solutionToIndices = new HashMap<String, ArrayList<Integer>>();
+        this.solutions = new ArrayList<>();
         this.indices = new ArrayList<>();
+        this.arrIndex = new ArrayList<Integer>();
     }
 
     public void solve(Trie trie) {
 
-        class Tuple <K, V, T, S, D> {
-            K x;
-            V y;
-            T z;
-            S w;
-            D t;
+        class Tuple <U, V, T, S, D> {
+            U trieNode;
+            V word;
+            T mask;
+            S index;
+            D depth;
 
-            Tuple(K x, V y, T z, S w, D t) {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-                this.w = w;
-                this.t = t;
+            Tuple(U trieNode, V solution, T mask, S index, D depth) {
+                this.trieNode = trieNode;
+                this.word = solution;
+                this.mask = mask;
+                this.index = index;
+                this.depth = depth;
             }
         }
 
         solutions.clear();
 
-        LinkedList<Tuple<RNode, int[], String, Trie.Node, Integer>> frontier = new LinkedList<>();
-        Tuple<RNode, int[], String, Trie.Node, Integer> cur;
-        int indices[];
+        LinkedList<Tuple<Trie.Node, String, Integer, Integer, Integer>> frontier = new LinkedList<>();
+        Tuple<Trie.Node, String, Integer, Integer, Integer> cur;
 
         for (int i = 0; i < 16; i++) {
-
 
             frontier.clear();
 
@@ -224,46 +219,52 @@ class RuzzleGraph {
             //
             frontier.push(
                     new Tuple<>(
-                            rnodes[i],
-                            indices = new int[16],
-                            rnodes[i].getId() + "",
                             trie.getRoot().hasChild(rnodes[i].getId()),
+                            rnodes[i].getId() + "",
+                            0,
+                            i,
                             0
                     )
             );
-
-            // Mark all indices as unused.
-            //
-            for (int j = 0; j < indices.length; j++)
-                indices[j] = -1;
-
 
             while ( !frontier.isEmpty() ) {
 
                 cur = frontier.pop();
 
-                // If we visited this node, backtrack.
+                // As we come off the stack, we need to remove all previous
+                // entries in the solution array.
                 //
-                if (contains(cur.y, cur.x.getLocation(), cur.t))
+                while ( cur.depth + 1 <= arrIndex.size() )
+                    arrIndex.remove((int)cur.depth);
+
+                // If we visited this node, skip it.
+                //
+                if ( (cur.mask & (1 << cur.index)) != 0) {
                     continue;
+                }
 
                 // Increase the depth of our search and mark the last
                 // visited spot as the current node.
                 //
-                cur.y[cur.t++] = cur.x.getLocation();
+                cur.mask |= 1 << cur.index;
 
-                if (cur.w.isWord()) {
-                    this.indices.add(cur.y);
-                    this.solutions.add(cur.z);
-                    this.solutionToIndices.put(cur.z, cur.y);
+                arrIndex.add(cur.index);
+                cur.depth++;
+
+                if (cur.trieNode.isWord() && !this.solutions.contains(cur.word)) {
+
+                    this.solutions.add(cur.word);
+                    this.solutionToIndices.put(cur.word, new ArrayList<Integer>(arrIndex));
                 }
 
+                boolean hadMove = false;
+                for (RNode x : rnodes[cur.index].getChildren()) {
 
-                for (RNode x : cur.x.getChildren()) {
-
-                    Trie.Node n = cur.w.hasChild(x.getId());
-                    if (n != null)
-                        frontier.push(new Tuple<>(x, cur.y.clone(), cur.z + x.getId(), n, cur.t));
+                    Trie.Node n = cur.trieNode.hasChild(x.getId());
+                    if (n != null) {
+                        hadMove = true;
+                        frontier.push(new Tuple<>(n, cur.word + x.getId(), cur.mask, x.getLocation(), cur.depth));
+                    }
 
                 }
 
@@ -274,12 +275,8 @@ class RuzzleGraph {
     public void solveRecursively(Trie trie) {
 
         Trie.Node root = trie.getRoot();
-        int indices[];
 
         for (int i = 0; i < 16; i++) {
-
-            indices = new int[16];
-            java.util.Arrays.fill(indices, -1);
 
             solveRecursively(
                     root.hasChild(rnodes[i].getId()),
@@ -299,21 +296,21 @@ class RuzzleGraph {
 
         // Have we visited this already?
         //
-        if ( (mask & (1 << rnodes[index].getLocation())) != 0 || root == null || indices == null)
+        if ( (mask & (1 << index)) != 0 || root == null || indices == null)
             return;
 
         // Mark as visited;
         //
-        mask |= 1 << rnodes[index].getLocation();
-        arrIndex[depth] = rnodes[index].getLocation();
+        mask |= 1 << index;
+        arrIndex.add(index);
 
         // If this is a solution, save it.
         //
         if (root.isWord()) {
             if (!this.solutions.contains(soFar)) {
-                this.indices.add(arrIndex.clone());
+
                 this.solutions.add(soFar);
-                this.solutionToIndices.put(soFar, arrIndex.clone());
+                this.solutionToIndices.put(soFar, new ArrayList<Integer>(arrIndex));
             }
         }
 
@@ -325,22 +322,14 @@ class RuzzleGraph {
 
         // Finished our move, undo it.
         //
-        arrIndex[depth] = -1;
+        arrIndex.remove(depth);
     }
 
-    private boolean contains (int[] arr, int x, int k) {
-        for (int i = 0; i < k; i++)
-            if (arr[i] == x)
-                return true;
-
-        return false;
-    }
-
-    public HashMap<String, int[]> getHashmap() {
+    public HashMap<String, ArrayList<Integer>> getHashmap() {
         return this.solutionToIndices;
     }
 
-    public ArrayList<int[]> getIndices() {
+    public ArrayList<Integer> getIndices() {
         return this.indices;
     }
 
