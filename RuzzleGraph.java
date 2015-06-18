@@ -14,6 +14,12 @@ class RuzzleGraph {
     private ArrayList<int[]> indices;
     private ArrayList<String> solutions;
 
+    private final int arrIndex[] = {
+            -1, -1, -1, -1,
+            -1, -1, -1, -1,
+            -1, -1, -1, -1,
+            -1, -1, -1, -1};
+
     public static class RNode {
 
         private int location;
@@ -278,7 +284,6 @@ class RuzzleGraph {
             solveRecursively(
                     root.hasChild(rnodes[i].getId()),
                     0,
-                    indices,
                     "" + rnodes[i].getId(),
                     rnodes[i].getLocation(),
                     0
@@ -290,7 +295,7 @@ class RuzzleGraph {
     // of the current solution, the string constructed so far, and the index of the RNode
     // we are currently working with.
     //
-    private void solveRecursively(Trie.Node root, int mask, int[] indices, String soFar, int index, int depth) {
+    private void solveRecursively(Trie.Node root, int mask, String soFar, int index, int depth) {
 
         // Have we visited this already?
         //
@@ -300,23 +305,27 @@ class RuzzleGraph {
         // Mark as visited;
         //
         mask |= 1 << rnodes[index].getLocation();
-        indices[depth] = rnodes[index].getLocation();
+        arrIndex[depth] = rnodes[index].getLocation();
 
         // If this is a solution, save it.
         //
         if (root.isWord()) {
             if (!this.solutions.contains(soFar)) {
-                this.indices.add(indices);
+                this.indices.add(arrIndex.clone());
                 this.solutions.add(soFar);
-                solutionToIndices.put(soFar, indices);
+                this.solutionToIndices.put(soFar, arrIndex.clone());
             }
         }
 
         // Recurse!
         //
         for (RNode x : rnodes[index].getChildren()) {
-           solveRecursively(root.hasChild(x.getId()), mask, indices.clone(), soFar + x.getId(), x.getLocation(), depth + 1);
+           solveRecursively(root.hasChild(x.getId()), mask, soFar + x.getId(), x.getLocation(), depth + 1);
         }
+
+        // Finished our move, undo it.
+        //
+        arrIndex[depth] = -1;
     }
 
     private boolean contains (int[] arr, int x, int k) {

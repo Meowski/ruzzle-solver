@@ -49,6 +49,11 @@ public class Main {
 
                 System.out.println(x.toUpperCase());
                 IOHelper.loadBoardInput(answer);
+
+                for (int y : graph.getHashmap().get(x))
+                    System.out.printf("%d, ", y);
+                System.out.println();
+
                 IOHelper.printSolution(graph.getHashmap().get(x));
 
                 String s = scanner.nextLine();
