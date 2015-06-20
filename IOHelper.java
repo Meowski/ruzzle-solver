@@ -10,7 +10,7 @@ public class IOHelper {
 
     enum Direction {N, NE, E, SE, S, SW, W, NW}
 
-    private static char[][] board = new char[13][25];
+    private static final char[][] board = new char[13][25];
 
     public static void loadTrie (Trie trie) {
 

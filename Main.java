@@ -7,11 +7,11 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String argv[]) {
-        Trie trie = new Trie();
 
+        Trie trie = new Trie();
         IOHelper.loadTrie(trie);
 
-
+        System.out.printf("Dictionary state size: %d\n\n", trie.traverseSize());
 
         System.out.printf("%s\n%s\n%s\n\n",
                 "Enter the letters, all next to each other, in the order that you would read them",
@@ -45,14 +45,20 @@ public class Main {
                     }
             );
 
+            System.out.printf("\nTotal solutions: %d\n", graph.getSolutions().size());
+            System.out.printf("Longest solutions: %d\n",
+                    graph.getSolutions().stream().reduce("", (s, s2) -> {
+                        if (s.length() < s2.length())
+                            return s2;
+                        else
+                            return s;
+                    }).length()
+            );
+
             for (String x : graph.getSolutions()) {
 
                 System.out.println(x.toUpperCase());
                 IOHelper.loadBoardInput(answer);
-
-                for (int y : graph.getHashmap().get(x))
-                    System.out.printf("%d, ", y);
-                System.out.println();
 
                 IOHelper.printSolution(graph.getHashmap().get(x));
 

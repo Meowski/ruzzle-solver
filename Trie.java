@@ -1,21 +1,27 @@
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Created by Meowington on 6/16/2015.
  */
 public class Trie {
 
+    private int id = 1;
     public static class Node {
 
         private LinkedList<Node> children;
         private Character letter;
         private boolean isWord;
+        private int id;
         
-        public Node (Character letter) {
+        public Node (Character letter, int id) {
 
             this.children = new LinkedList<>();
             this.isWord = false;
             this.letter = letter;
+            this.id = id;
         }
 
         public void setIsWord() {
@@ -66,6 +72,11 @@ public class Trie {
         }
 
         @Override
+        public int hashCode () {
+            return this.id;
+        }
+
+        @Override
         public String toString() {
             return this.letter == null ? "" : this.letter.toString();
         }
@@ -74,7 +85,29 @@ public class Trie {
     private Node root;
 
     public Trie () {
-        root = new Node(null);
+        root = new Node(null, 0);
+    }
+
+    public int traverseSize () {
+
+        Node cur = root;
+        Stack<Node> frontier = new Stack<>();
+        Set<Node> visited = new HashSet<>();
+        frontier.push(cur);
+
+        int result = 0;
+        while (!frontier.empty()) {
+
+            cur = frontier.pop();
+            if (visited.contains(cur))
+                continue;
+
+            visited.add(cur);
+            cur.getChildren().forEach(frontier::push);
+            result++;
+        }
+
+        return result;
     }
 
     public void addWord (String s) {
@@ -90,7 +123,7 @@ public class Trie {
             else {
                 Node toAdd;
                 for ( ; i < s.length(); i++) {
-                    toAdd = new Node (s.charAt(i));
+                    toAdd = new Node (s.charAt(i), this.id++);
                     cur = cur.addChild(toAdd);
                 }
             }
