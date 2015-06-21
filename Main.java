@@ -9,9 +9,11 @@ public class Main {
     public static void main(String argv[]) {
 
         Trie trie = new Trie();
-        IOHelper.loadTrie(trie);
+        //IOHelper.loadTrie(trie);
 
         System.out.printf("Dictionary state size: %d\n\n", trie.traverseSize());
+
+        trie.minimize();
 
         System.out.printf("%s\n%s\n%s\n\n",
                 "Enter the letters, all next to each other, in the order that you would read them",
