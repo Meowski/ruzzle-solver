@@ -8,14 +8,30 @@ import java.util.ArrayList;
  */
 public class IOHelper {
 
+// You can picture the board indices like this!
+//
+//                " _____ _____ _____ _____",
+//                "|     |     |     |     |",
+//                "|  0  |  1  |  2  |  3  |",
+//                "|_____|_____|_____|_____|",
+//                "|     |     |     |     |",
+//                "|  4  |  5  |  6  |  7  |",
+//                "|_____|_____|_____|_____|",
+//                "|     |     |     |     |",
+//                "|  8  |  9  | 10  | 11  |",
+//                "|_____|_____|_____|_____|",
+//                "|     |     |     |     |",
+//                "| 12  | 13  | 14  | 15  |",
+//                "|_____|_____|_____|_____|"
+
     enum Direction {N, NE, E, SE, S, SW, W, NW}
 
     private static final char[][] board = new char[13][25];
 
-    public static void loadTrie (Trie trie) {
+    public static void loadTrie (Trie trie, String path) {
 
         try {
-            FileReader fr = new FileReader(new File("./src/dictionary.txt"));
+            FileReader fr = new FileReader(new File(path));
             BufferedReader br = new BufferedReader(fr);
 
             String cur;
@@ -25,11 +41,9 @@ public class IOHelper {
         catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public static void loadBoardInput (String input) {
-
 
         loadNewBoard();
 
@@ -58,7 +72,7 @@ public class IOHelper {
             next = indices.get(i + 1);
 
             x = indexToXCoord(prev);
-            y =indexToYCoord(prev);
+            y = indexToYCoord(prev);
 
             if (i == 0)
                 toUpper(x, y);
@@ -82,6 +96,8 @@ public class IOHelper {
         board[y][x] = s.charAt(0);
     }
 
+    // Given a location on the board, draw a line in the given direction.
+    //
     private static void drawLine (int x, int y, Direction dir) {
         switch(dir) {
             case N: board[y - 1][x] = board[y - 2][x] = '|';
@@ -103,6 +119,8 @@ public class IOHelper {
         }
     }
 
+    // Given a location on the board, return the Y axis
+    // in the String array representing the board.
     private static int indexToYCoord(int index) {
 
         if (0 <= index && index <= 3)
@@ -118,6 +136,8 @@ public class IOHelper {
         return -1;
     }
 
+    // Given a location on the board, return the X axis
+    // in the String array representing the board.
     private static int indexToXCoord(int index) {
 
         switch (index % 4) {
@@ -160,6 +180,7 @@ public class IOHelper {
     }
 
     private static void loadBlankBoard() {
+
         String s[] = new String[]{
                         " _____ _____ _____ _____",
                         "|     |     |     |     |",

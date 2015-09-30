@@ -16,10 +16,16 @@ class RuzzleGraph {
 
     private ArrayList<Integer> arrIndex;
 
+    // A node in our graph.
     public static class RNode {
 
+        // Every board square is given a number, 0 - 15
         private int location;
+
+        // The character represented by this node
         private char id;
+
+        // Edges in our graph
         private LinkedList<RNode> children;
 
         public RNode (int location, char id) {
@@ -188,6 +194,7 @@ class RuzzleGraph {
         this.arrIndex = new ArrayList<Integer>();
     }
 
+    // A stack based approach to searching our solution space
     public void solve(Trie trie) {
 
         class Tuple <U, V, T, S, D> {
@@ -257,12 +264,10 @@ class RuzzleGraph {
                     this.solutionToIndices.put(cur.word, new ArrayList<Integer>(arrIndex));
                 }
 
-                boolean hadMove = false;
                 for (RNode x : rnodes[cur.index].getChildren()) {
 
                     Trie.Node n = cur.trieNode.hasChild(x.getId());
                     if (n != null) {
-                        hadMove = true;
                         frontier.push(new Tuple<>(n, cur.word + x.getId(), cur.mask, x.getLocation(), cur.depth));
                     }
 
@@ -307,8 +312,12 @@ class RuzzleGraph {
         // If this is a solution, save it.
         //
         if (root.isWord()) {
+
+            // If we haven't solved for this word yet...
             if (!this.solutions.contains(soFar)) {
 
+                // Add the String and make a copy of the board locations
+                // we've seen so far.
                 this.solutions.add(soFar);
                 this.solutionToIndices.put(soFar, new ArrayList<Integer>(arrIndex));
             }
